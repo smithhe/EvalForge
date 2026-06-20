@@ -1,0 +1,164 @@
+{
+  "$defs": {
+    "APIExpectation": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "title": "Status",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "APIExpectation",
+      "type": "object"
+    },
+    "APIPlanStep": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "expect": {
+          "$ref": "#/$defs/APIExpectation"
+        }
+      },
+      "required": [
+        "method",
+        "path",
+        "expect"
+      ],
+      "title": "APIPlanStep",
+      "type": "object"
+    },
+    "PlanGap": {
+      "additionalProperties": false,
+      "properties": {
+        "item": {
+          "title": "Item",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "item",
+        "reason"
+      ],
+      "title": "PlanGap",
+      "type": "object"
+    },
+    "Scenario": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "layers": {
+          "$ref": "#/$defs/ScenarioLayers"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "layers"
+      ],
+      "title": "Scenario",
+      "type": "object"
+    },
+    "ScenarioLayers": {
+      "additionalProperties": false,
+      "properties": {
+        "terminal": {
+          "items": {
+            "$ref": "#/$defs/TerminalPlanStep"
+          },
+          "title": "Terminal",
+          "type": "array"
+        },
+        "api": {
+          "items": {
+            "$ref": "#/$defs/APIPlanStep"
+          },
+          "title": "Api",
+          "type": "array"
+        },
+        "ui": {
+          "items": {
+            "$ref": "#/$defs/UIPlanStep"
+          },
+          "title": "Ui",
+          "type": "array"
+        }
+      },
+      "title": "ScenarioLayers",
+      "type": "object"
+    },
+    "TerminalPlanStep": {
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "title": "Command",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "command",
+        "reason"
+      ],
+      "title": "TerminalPlanStep",
+      "type": "object"
+    },
+    "UIPlanStep": {
+      "additionalProperties": false,
+      "properties": {
+        "instruction": {
+          "title": "Instruction",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instruction"
+      ],
+      "title": "UIPlanStep",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Structured test plan produced by the LLM planner.",
+  "properties": {
+    "scenarios": {
+      "items": {
+        "$ref": "#/$defs/Scenario"
+      },
+      "title": "Scenarios",
+      "type": "array"
+    },
+    "gaps": {
+      "items": {
+        "$ref": "#/$defs/PlanGap"
+      },
+      "title": "Gaps",
+      "type": "array"
+    }
+  },
+  "title": "VerificationPlan",
+  "type": "object"
+}

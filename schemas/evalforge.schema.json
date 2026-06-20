@@ -1,0 +1,314 @@
+{
+  "$defs": {
+    "APIConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "title": "Base Url",
+          "type": "string"
+        },
+        "health": {
+          "items": {
+            "$ref": "#/$defs/HealthCheckConfig"
+          },
+          "title": "Health",
+          "type": "array"
+        }
+      },
+      "required": [
+        "base_url"
+      ],
+      "title": "APIConfig",
+      "type": "object"
+    },
+    "BuildConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "commands": {
+          "items": {
+            "$ref": "#/$defs/CommandConfig"
+          },
+          "title": "Commands",
+          "type": "array"
+        }
+      },
+      "title": "BuildConfig",
+      "type": "object"
+    },
+    "CommandConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "run": {
+          "title": "Run",
+          "type": "string"
+        },
+        "optional": {
+          "default": false,
+          "title": "Optional",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "run"
+      ],
+      "title": "CommandConfig",
+      "type": "object"
+    },
+    "EvidenceConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "video": {
+          "default": true,
+          "title": "Video",
+          "type": "boolean"
+        },
+        "screenshots": {
+          "default": true,
+          "title": "Screenshots",
+          "type": "boolean"
+        },
+        "output_dir": {
+          "default": ".evalforge/runs",
+          "title": "Output Dir",
+          "type": "string"
+        }
+      },
+      "title": "EvidenceConfig",
+      "type": "object"
+    },
+    "HealthCheckConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "default": "GET",
+          "title": "Method",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "expect_status": {
+          "default": 200,
+          "title": "Expect Status",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "HealthCheckConfig",
+      "type": "object"
+    },
+    "LLMConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/LLMProvider",
+          "default": "openai_compat"
+        },
+        "base_url": {
+          "title": "Base Url",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "base_url",
+        "model"
+      ],
+      "title": "LLMConfig",
+      "type": "object"
+    },
+    "LLMProvider": {
+      "enum": [
+        "openai_compat"
+      ],
+      "title": "LLMProvider",
+      "type": "string"
+    },
+    "PolicyConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "fail_fast": {
+          "default": false,
+          "title": "Fail Fast",
+          "type": "boolean"
+        },
+        "max_ui_steps": {
+          "default": 40,
+          "title": "Max Ui Steps",
+          "type": "integer"
+        },
+        "max_ui_retries": {
+          "default": 4,
+          "title": "Max Ui Retries",
+          "type": "integer"
+        }
+      },
+      "title": "PolicyConfig",
+      "type": "object"
+    },
+    "ProjectConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ProjectConfig",
+      "type": "object"
+    },
+    "SecretsConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "default": ".evalforge/secrets.env",
+          "title": "File",
+          "type": "string"
+        }
+      },
+      "title": "SecretsConfig",
+      "type": "object"
+    },
+    "SlackConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "bot_token_secret": {
+          "title": "Bot Token Secret",
+          "type": "string"
+        },
+        "channel_id": {
+          "title": "Channel Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bot_token_secret",
+        "channel_id"
+      ],
+      "title": "SlackConfig",
+      "type": "object"
+    },
+    "TestsConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "commands": {
+          "items": {
+            "$ref": "#/$defs/CommandConfig"
+          },
+          "title": "Commands",
+          "type": "array"
+        }
+      },
+      "title": "TestsConfig",
+      "type": "object"
+    },
+    "UIConfig": {
+      "additionalProperties": false,
+      "properties": {
+        "base_url": {
+          "title": "Base Url",
+          "type": "string"
+        },
+        "browser": {
+          "default": "chromium",
+          "title": "Browser",
+          "type": "string"
+        },
+        "smoke_route": {
+          "default": "/",
+          "title": "Smoke Route",
+          "type": "string"
+        }
+      },
+      "required": [
+        "base_url"
+      ],
+      "title": "UIConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Root config model for evalforge.yaml in a target repo.",
+  "properties": {
+    "version": {
+      "const": "1",
+      "default": "1",
+      "title": "Version",
+      "type": "string"
+    },
+    "project": {
+      "$ref": "#/$defs/ProjectConfig"
+    },
+    "llm": {
+      "$ref": "#/$defs/LLMConfig"
+    },
+    "build": {
+      "$ref": "#/$defs/BuildConfig"
+    },
+    "tests": {
+      "$ref": "#/$defs/TestsConfig"
+    },
+    "api": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/APIConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "ui": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UIConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "secrets": {
+      "$ref": "#/$defs/SecretsConfig"
+    },
+    "evidence": {
+      "$ref": "#/$defs/EvidenceConfig"
+    },
+    "slack": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SlackConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "policy": {
+      "$ref": "#/$defs/PolicyConfig"
+    }
+  },
+  "required": [
+    "project",
+    "llm"
+  ],
+  "title": "EvalForgeConfig",
+  "type": "object"
+}

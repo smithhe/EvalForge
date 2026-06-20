@@ -1,0 +1,2 @@
+# Minimal fixture deps — API uses stdlib http.server; tests need pytest only.
+pytest>=8.0.0

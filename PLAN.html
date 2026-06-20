@@ -252,14 +252,73 @@
             <tr><td>Desktop scope</td><td>Web apps in browser <strong>and</strong> native desktop applications</td></tr>
             <tr><td>UI automation</td><td>Computer-use style (vision + a11y context + OS-level input)</td></tr>
             <tr><td>LLM role</td><td><strong>Required</strong>, bring-your-own provider; derives executable steps from acceptance criteria at runtime</td></tr>
+            <tr><td>LLM transport</td><td>Single <strong>OpenAI-compatible</strong> client (<code>base_url</code> + <code>api_key</code> configurable) — supports cloud APIs, Ollama, OpenRouter, LiteLLM, etc.</td></tr>
             <tr><td>Acceptance criteria input</td><td>Markdown passed at run time (CLI arg / PR body) — not committed to repo by default</td></tr>
             <tr><td>Repo config</td><td><code>evalforge.yaml</code> + optional <code>AGENTS.md</code>; env via <code>.cursor/environment.json</code></td></tr>
-            <tr><td>Git integration</td><td>Manual — point at local path or branch (no webhook/GitHub App in v1)</td></tr>
-            <tr><td>Auth during tests</td><td>Secrets vault in config (env vars / encrypted credentials file)</td></tr>
-            <tr><td>Outputs</td><td>HTML report, Slack bot with file uploads, full desktop video + per-step screenshots</td></tr>
+            <tr><td>Git integration</td><td>Manual — point at local path; <code>--branch</code> is <strong>metadata only</strong> (no auto checkout in v1)</td></tr>
+            <tr><td>Auth during tests</td><td>Plain gitignored <code>.evalforge/secrets.env</code> injected into process env (no encryption in v1)</td></tr>
+            <tr><td>Outputs</td><td>HTML report (first), then Slack bot with file uploads; full desktop video + per-step screenshots</td></tr>
             <tr><td>Success criteria</td><td>Evidence bundle parity with Cursor cloud agent PR artifacts</td></tr>
             <tr><td>Phasing</td><td>Dependency order only — no week/timeline estimates</td></tr>
-            <tr><td>First dogfood target</td><td>Repo-agnostic; dogfood TBD</td></tr>
+            <tr><td>Integration testing</td><td>Minimal <strong>fixture repo</strong> inside EvalForge (<code>fixtures/sample-app/</code>) for env/build/test validation</td></tr>
+            <tr><td>CLI framework</td><td><strong>Typer</strong></td></tr>
+            <tr><td>First test parser</td><td><strong>pytest</strong> (extensible parser interface for xUnit, Jest, etc.)</td></tr>
+        </table>
+
+        <h3>1.3 Pre-implementation decisions (June 20, 2026)</h3>
+        <p>Locked during planning Q&amp;A before Phase 0 begins:</p>
+        <table>
+            <tr><th>Topic</th><th>Decision</th><th>Rationale</th></tr>
+            <tr>
+                <td>Integration test target</td>
+                <td>Minimal fixture repo in <code>fixtures/sample-app/</code></td>
+                <td>Self-contained CI and local dev without depending on an external repo</td>
+            </tr>
+            <tr>
+                <td>Linux display stack</td>
+                <td><strong>Auto-detect</strong> X11 vs Wayland; support both driver sets</td>
+                <td>VM display server may vary; avoids hard-coding one input/screenshot path</td>
+            </tr>
+            <tr>
+                <td>LLM provider architecture</td>
+                <td>Single <code>openai_compat</code> adapter via OpenAI Python SDK + configurable <code>base_url</code></td>
+                <td>One code path for cloud APIs, Ollama, OpenRouter, LiteLLM, and other gateways</td>
+            </tr>
+            <tr>
+                <td>ChatGPT Plus / Codex subscription</td>
+                <td><strong>Not supported directly</strong> — Plus is app-only, not a programmatic API</td>
+                <td>If a user runs an OpenAI-compatible gateway (e.g. LiteLLM) against their setup, plug it in via <code>base_url</code> in config — no EvalForge code change</td>
+            </tr>
+            <tr>
+                <td>Local models</td>
+                <td>Supported via OpenAI-compatible endpoint (e.g. Ollama at <code>http://localhost:11434/v1</code>)</td>
+                <td>Same adapter; model name and <code>base_url</code> point at local runtime</td>
+            </tr>
+            <tr>
+                <td><code>environment.json</code> contract</td>
+                <td>Derive parser from <strong>Cursor docs</strong> + public examples; loose parsing with version check</td>
+                <td>No single canonical user repo; tolerate minor format drift</td>
+            </tr>
+            <tr>
+                <td>Secrets vault (v1)</td>
+                <td>Plain <code>.evalforge/secrets.env</code> (gitignored)</td>
+                <td>Simple, matches most dev workflows; encryption deferred</td>
+            </tr>
+            <tr>
+                <td><code>--branch</code> flag</td>
+                <td>Records branch name in <code>RunResult</code> only; user manages <code>git checkout</code> manually</td>
+                <td>Avoids mutating target repo state during orchestration</td>
+            </tr>
+            <tr>
+                <td>Slack reporter</td>
+                <td><strong>Defer</strong> until HTML reports work (P8 before P9)</td>
+                <td>HTML report is the primary human artifact for first usable milestone</td>
+            </tr>
+            <tr>
+                <td>Computer-use (Linux v1)</td>
+                <td>Approach A — custom Python loop; spike in P6 before full commit</td>
+                <td>Full control, no vendor lock-in; Playwright CDP for browser a11y as sub-path</td>
+            </tr>
         </table>
 
         <div class="callout info">
@@ -319,8 +378,8 @@
             </div>
             <div class="card">
                 <h4>🧠 LLM Test Planner</h4>
-                <p>Input: acceptance criteria markdown + repo context snapshot. Output: structured <code>VerificationPlan</code> with terminal commands, API checks, and UI scenarios.</p>
-                <span class="tag orange">Pluggable provider</span>
+                <p>Input: acceptance criteria markdown + repo context snapshot. Output: structured <code>VerificationPlan</code> with terminal commands, API checks, and UI scenarios. Uses a single OpenAI-compatible client — cloud APIs, Ollama, and gateways share one adapter.</p>
+                <span class="tag orange">openai_compat</span>
                 <span class="tag blue">Structured JSON output</span>
             </div>
             <div class="card">
@@ -354,7 +413,7 @@
         <h3>2.3 Repository layout (EvalForge project)</h3>
         <pre><code>EvalForge/
 ├── evalforge/
-│   ├── cli/                 # Click/Typer CLI entrypoints
+│   ├── cli/                 # Typer CLI entrypoints
 │   ├── config/              # Schema, loaders (evalforge.yaml, environment.json)
 │   ├── planner/             # LLM test planner + prompt templates
 │   ├── orchestrator/        # Run state machine
@@ -364,11 +423,15 @@
 │   │   ├── terminal.py
 │   │   └── api.py
 │   ├── computer_use/        # Screenshot, a11y, input, action loop
+│   │   └── platform/        # Linux X11/Wayland auto-detect drivers
 │   ├── evidence/            # Recorder, artifact store, gap analyzer
 │   ├── reporters/
 │   │   ├── html.py
-│   │   └── slack.py
-│   └── providers/           # LLM provider adapters (OpenAI, Anthropic, etc.)
+│   │   └── slack.py         # deferred until P8 complete
+│   └── providers/
+│       └── openai_compat.py # Single OpenAI-compatible LLM adapter
+├── fixtures/
+│   └── sample-app/          # Minimal API + frontend for integration tests
 ├── schemas/
 │   ├── evalforge.schema.json
 │   └── verification_plan.schema.json
@@ -478,9 +541,10 @@
   <span class="kw">name</span>: <span class="str">my-app</span>
 
 <span class="kw">llm</span>:
-  <span class="kw">provider</span>: <span class="str">anthropic</span>        <span class="cm"># openai | anthropic | ollama | custom</span>
-  <span class="kw">model</span>: <span class="str">claude-sonnet-4-20250514</span>
-  <span class="cm"># api_key via secrets vault, not in file</span>
+  <span class="kw">provider</span>: <span class="str">openai_compat</span>   <span class="cm"># single adapter; base_url routes to any gateway</span>
+  <span class="kw">base_url</span>: <span class="str">https://api.openai.com/v1</span>  <span class="cm"># or http://localhost:11434/v1 (Ollama)</span>
+  <span class="kw">model</span>: <span class="str">gpt-4o</span>              <span class="cm"># or local model name, e.g. llama3</span>
+  <span class="cm"># api_key via secrets vault (OPENAI_API_KEY or custom), not in file</span>
 
 <span class="kw">build</span>:
   <span class="kw">commands</span>:
@@ -527,6 +591,25 @@
   <span class="kw">max_ui_steps</span>: <span class="str">40</span>
   <span class="kw">max_ui_retries</span>: <span class="str">4</span>           <span class="cm"># mirror Cursor browser MCP limit</span></code></pre>
 
+        <h4>LLM configuration examples</h4>
+        <pre><code><span class="cm"># OpenAI API</span>
+<span class="kw">llm</span>:
+  <span class="kw">provider</span>: <span class="str">openai_compat</span>
+  <span class="kw">base_url</span>: <span class="str">https://api.openai.com/v1</span>
+  <span class="kw">model</span>: <span class="str">gpt-4o</span>
+
+<span class="cm"># Ollama (local)</span>
+<span class="kw">llm</span>:
+  <span class="kw">provider</span>: <span class="str">openai_compat</span>
+  <span class="kw">base_url</span>: <span class="str">http://localhost:11434/v1</span>
+  <span class="kw">model</span>: <span class="str">llama3</span>
+
+<span class="cm"># LiteLLM / OpenRouter / other gateway</span>
+<span class="kw">llm</span>:
+  <span class="kw">provider</span>: <span class="str">openai_compat</span>
+  <span class="kw">base_url</span>: <span class="str">http://localhost:4000/v1</span>
+  <span class="kw">model</span>: <span class="str">anthropic/claude-sonnet-4-20250514</span></code></pre>
+
         <h3>4.2 <code>AGENTS.md</code> (optional, per target repo)</h3>
         <p>Parsed as unstructured context for the LLM planner. Recommended sections:</p>
         <ul>
@@ -537,14 +620,17 @@
         </ul>
 
         <h3>4.3 <code>.cursor/environment.json</code> (reused as-is)</h3>
-        <p>EvalForge reads Cursor's existing format for <code>install</code>, <code>start</code>, and <code>terminals</code> to avoid duplicating service definitions. If missing, fall back to <code>evalforge.yaml</code> <code>services</code> block (future extension).</p>
+        <p>EvalForge reads Cursor's existing format for <code>install</code>, <code>start</code>, and <code>terminals</code> to avoid duplicating service definitions. Parser contract is derived from <strong>Cursor documentation and public examples</strong> with loose parsing and a version-field check. If missing, fall back to <code>evalforge.yaml</code> <code>services</code> block (future extension). The fixture repo at <code>fixtures/sample-app/</code> includes a reference <code>environment.json</code> for tests.</p>
 
-        <h3>4.4 Acceptance criteria input (runtime)</h3>
+        <h3>4.4 Git branch semantics</h3>
+        <p><code>--branch</code> records the branch name in <code>RunResult</code> for report context only. EvalForge does <strong>not</strong> run <code>git checkout</code> on the target repo in v1 — the user ensures the working tree is on the intended branch before invoking <code>evalforge run</code>.</p>
+
+        <h3>4.5 Acceptance criteria input (runtime)</h3>
         <pre><code><span class="cm"># Passed at run time — NOT committed by default</span>
 evalforge run \
   --repo /path/to/target \
   --acceptance acceptance.md \
-  --branch feature/my-change
+  --branch feature/my-change   <span class="cm"># metadata only; checkout manually first</span>
 
 <span class="cm"># acceptance.md example</span>
 <span class="kw">## Feature: Task creation</span>
@@ -634,7 +720,7 @@ evalforge run \
                 <td><strong>B. Vendor computer-use API</strong><br><small>Anthropic computer use, etc.</small></td>
                 <td>Faster to prototype; model trained for desktop interaction</td>
                 <td>Cost; latency; API availability; less control over evidence format</td>
-                <td><strong>Provider adapter option</strong> — use via <code>providers/</code> if spike shows better results</td>
+                <td><strong>Optional via gateway</strong> — if vendor exposes an OpenAI-compatible or custom endpoint, route through <code>openai_compat</code> <code>base_url</code>; spike compares in P6</td>
             </tr>
             <tr>
                 <td><strong>C. Hybrid browser + OS</strong><br><small>Playwright for browser a11y; pyautogui for native</small></td>
@@ -675,6 +761,7 @@ evalforge run \
         </ul>
 
         <h3>6.3 Linux implementation stack (Phase 5–6)</h3>
+        <p>Session type (X11 vs Wayland) is detected at runtime; the matching driver set is selected automatically.</p>
         <div class="grid">
             <div class="card">
                 <h4>Screenshot</h4>
@@ -726,7 +813,7 @@ evalforge run \
 
         <h3>7.2 VM prerequisites checklist</h3>
         <ul class="checklist">
-            <li>GUI session active (X11 or Wayland) with logged-in user</li>
+            <li>GUI session active (X11 or Wayland) with logged-in user — EvalForge auto-detects session type and selects drivers</li>
             <li>Python 3.11+ and FFmpeg installed</li>
             <li>Target repo cloned at known path</li>
             <li>Secrets file deployed to <code>.evalforge/secrets.env</code> (out of band)</li>
@@ -745,7 +832,7 @@ evalforge run \
         </ul>
         <table>
             <tr><th>OS</th><th>Screenshot</th><th>A11y</th><th>Input</th><th>Video</th><th>Phase</th></tr>
-            <tr><td>Linux</td><td>mss / grim</td><td>AT-SPI2</td><td>xdotool / ydotool</td><td>ffmpeg x11grab</td><td>5–6</td></tr>
+            <tr><td>Linux</td><td>mss / grim (auto per session)</td><td>AT-SPI2</td><td>xdotool (X11) / ydotool (Wayland)</td><td>ffmpeg x11grab / wf-recorder</td><td>5–6</td></tr>
             <tr><td>Windows</td><td>mss / PIL</td><td>UI Automation</td><td>pywinauto</td><td>ffmpeg gdigrab</td><td>11</td></tr>
             <tr><td>macOS</td><td>mss</td><td>AX API (atomacos)</td><td>pyobjc / cliclick</td><td>ffmpeg avfoundation</td><td>12</td></tr>
         </table>
@@ -768,13 +855,14 @@ evalforge run \
             <div class="phase-body">
                 <p class="deps">Dependencies: none</p>
                 <ul class="checklist">
-                    <li>Python package scaffold (<code>pyproject.toml</code>, <code>evalforge</code> module, CLI stub)</li>
+                    <li>Python package scaffold (<code>pyproject.toml</code>, <code>evalforge</code> module, Typer CLI stub)</li>
                     <li>Pydantic models for config, RunResult, VerificationPlan</li>
                     <li>JSON schemas exported to <code>schemas/</code></li>
                     <li>Basic CLI: <code>evalforge --version</code>, <code>evalforge validate-config</code></li>
+                    <li>Sample <code>evalforge.yaml</code> in <code>fixtures/sample-app/</code></li>
                     <li>README with architecture summary linking to this plan</li>
                 </ul>
-                <p><strong>Exit criteria:</strong> <code>evalforge validate-config --repo .</code> parses a sample evalforge.yaml without error.</p>
+                <p><strong>Exit criteria:</strong> <code>evalforge validate-config --repo fixtures/sample-app</code> parses the sample <code>evalforge.yaml</code> without error.</p>
             </div>
         </div>
 
@@ -810,7 +898,7 @@ evalforge run \
                     <li>Teardown: kill child processes on run end</li>
                     <li>Record env layer in RunResult with stdout/stderr logs</li>
                 </ul>
-                <p><strong>Exit criteria:</strong> On a sample multi-service repo, <code>evalforge env up --repo X</code> starts services and reports healthy.</p>
+                <p><strong>Exit criteria:</strong> On <code>fixtures/sample-app/</code>, <code>evalforge env up --repo fixtures/sample-app</code> starts services and reports healthy.</p>
             </div>
         </div>
 
@@ -825,7 +913,7 @@ evalforge run \
                     <li>Generic command runner: subprocess, timeout, stdout/stderr capture, exit code</li>
                     <li>Build/lint layer from evalforge.yaml <code>build.commands</code></li>
                     <li>Terminal test layer from <code>tests.commands</code></li>
-                    <li>Parse test output for pass/fail counts (xUnit, pytest, jest parsers — start with one, extensible)</li>
+                    <li>Parse test output for pass/fail counts (pytest parser first; xUnit, jest parsers extensible)</li>
                     <li>Retry policy for flaky tests (configurable)</li>
                 </ul>
                 <p><strong>Exit criteria:</strong> <code>evalforge run --repo X --acceptance ac.md --layers build,terminal</code> produces RunResult JSON with test counts.</p>
@@ -858,11 +946,12 @@ evalforge run \
             <div class="phase-body">
                 <p class="deps">Dependencies: P1</p>
                 <ul class="checklist">
-                    <li>Provider adapter interface + OpenAI and Anthropic implementations</li>
+                    <li><code>openai_compat</code> provider adapter (OpenAI Python SDK + configurable <code>base_url</code> / <code>api_key</code>)</li>
                     <li>Prompt template: AC markdown + AGENTS.md + evalforge.yaml → VerificationPlan JSON</li>
                     <li>Schema validation of LLM output; retry on malformed JSON</li>
                     <li><code>evalforge plan</code> command outputs plan without executing</li>
                     <li>Gap analysis section in plan output</li>
+                    <li>Document example configs for OpenAI API, Ollama (<code>localhost:11434/v1</code>), and gateway proxies</li>
                 </ul>
                 <p><strong>Exit criteria:</strong> Given sample AC markdown, planner produces valid VerificationPlan mapping criteria to terminal, API, and UI layers.</p>
             </div>
@@ -877,6 +966,7 @@ evalforge run \
                 <p class="deps">Dependencies: P5</p>
                 <ul class="checklist">
                     <li>Implement ScreenshotDriver, AccessibilityDriver, InputDriver for Linux</li>
+                    <li>Auto-detect X11 vs Wayland; select xdotool/ydotool and screenshot/video backend accordingly</li>
                     <li>Single-scenario proof: "open browser to URL, verify page title visible"</li>
                     <li>Compare Approach A vs B (custom vs vendor API) — document decision</li>
                     <li>Per-step screenshot saved with timestamp and action metadata</li>
@@ -928,7 +1018,7 @@ evalforge run \
                 <span class="phase-id">P9</span>
             </div>
             <div class="phase-body">
-                <p class="deps">Dependencies: P8</p>
+                <p class="deps">Dependencies: P8 — <strong>deferred</strong> until HTML reports are working; not required for first usable milestone</p>
                 <ul class="checklist">
                     <li>Slack bot token auth from secrets vault</li>
                     <li>Summary message with pass/fail/partial status</li>
@@ -951,8 +1041,9 @@ evalforge run \
                     <li><code>evalforge run</code> executes full layer sequence: env → build → terminal → api → ui</li>
                     <li>Policy: <code>fail_fast</code> vs collect-all-evidence modes</li>
                     <li>CLI flags: <code>--layers</code>, <code>--skip-env</code>, <code>--plan-only</code>, <code>--no-slack</code></li>
+                    <li><code>--branch</code> records metadata only; no automatic git checkout</li>
                     <li>Exit code 0 only when all executed layers pass</li>
-                    <li>End-to-end demo on a real repo (dogfood target TBD)</li>
+                    <li>End-to-end demo on <code>fixtures/sample-app/</code></li>
                 </ul>
                 <p><strong>Exit criteria:</strong> Single command produces Cursor-parity evidence bundle from AC markdown input.</p>
             </div>
@@ -1007,7 +1098,7 @@ evalforge plan --repo /path/to/target --acceptance acceptance.md
 evalforge run --repo /path/to/target --acceptance acceptance.md --layers env,build,terminal
 
 <span class="cm"># Full verification run</span>
-evalforge run --repo /path/to/target --acceptance acceptance.md --branch feature/x
+evalforge run --repo /path/to/target --acceptance acceptance.md --branch feature/x  <span class="cm"># branch = metadata only</span>
 
 <span class="cm"># Environment management only</span>
 evalforge env up --repo /path/to/target
@@ -1022,6 +1113,11 @@ gh pr view 123 --json body -q .body | evalforge run --repo . --acceptance-stdin<
         <div class="section-header">
             <div class="num orange">10</div>
             <h2>Slack Evidence Delivery</h2>
+        </div>
+
+        <div class="callout warn">
+            <h4>Deferred until P8</h4>
+            <p>Slack reporting is implemented in Phase 9, <strong>after</strong> the HTML report generator is complete. The first usable milestone is a self-contained HTML evidence bundle; Slack is optional via <code>--no-slack</code> once implemented.</p>
         </div>
 
         <h3>10.1 Message structure</h3>
@@ -1072,7 +1168,7 @@ gh pr view 123 --json body -q .body | evalforge run --repo . --acceptance-stdin<
             <tr>
                 <td>LLM cost per run</td>
                 <td>Expensive at scale</td>
-                <td>Cache VerificationPlan; use smaller model for action loop; BYO provider choice</td>
+                <td>Cache VerificationPlan; configurable <code>base_url</code> for local Ollama models; BYO gateway choice</td>
             </tr>
             <tr>
                 <td>Secrets exposure in logs/reports</td>
@@ -1109,7 +1205,7 @@ gh pr view 123 --json body -q .body | evalforge run --repo . --acceptance-stdin<
 
 <footer>
     <p>EvalForge — Cursor Cloud Agent Testing Mirror — Implementation Plan</p>
-    <p>Generated from requirements session — June 20, 2026</p>
+    <p>Requirements session — June 20, 2026 · Pre-implementation decisions codified — June 20, 2026</p>
 </footer>
 
 </body>
