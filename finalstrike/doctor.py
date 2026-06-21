@@ -14,6 +14,12 @@ from finalstrike.fixture_capabilities import (
 )
 from finalstrike.computer_use.browser import browser_available, browser_check_detail
 from finalstrike.config.loader import load_config
+from finalstrike.config.overrides import (
+    LOCAL_CONFIG_EXAMPLE,
+    LOCAL_CONFIG_FILENAME,
+    local_config_example_path,
+    local_config_path,
+)
 from finalstrike.phase_status import (
     IMPLEMENTED_PHASES,
     STUB_MODULES,
@@ -218,6 +224,29 @@ def _fixture_checks(repo: Path) -> list[DoctorCheck]:
                 phase=6,
             )
         )
+
+    local_path = local_config_path(repo)
+    if local_path.is_file():
+        checks.append(
+            DoctorCheck(
+                name="Local config overlay",
+                status=CheckStatus.OK,
+                detail=f"{LOCAL_CONFIG_FILENAME} present (gitignored overrides)",
+            )
+        )
+    else:
+        example = local_config_example_path(repo)
+        if example.is_file():
+            checks.append(
+                DoctorCheck(
+                    name="Local config overlay",
+                    status=CheckStatus.SKIP,
+                    detail=(
+                        f"No {LOCAL_CONFIG_FILENAME}; copy {LOCAL_CONFIG_EXAMPLE} "
+                        "to test other LLM providers without editing finalstrike.yaml"
+                    ),
+                )
+            )
 
     return checks
 

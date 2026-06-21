@@ -25,12 +25,17 @@ def assess_live_llm(repo: Path) -> LiveLLMStatus:
     """Return whether ``finalstrike.yaml`` + secrets can reach the configured LLM."""
     repo = repo.resolve()
     try:
-        config = load_config(repo)
+        base_config = load_config(repo)
+    except (FileNotFoundError, ValueError, ValidationError) as exc:
+        return LiveLLMStatus(ready=False, detail=f"Cannot load config: {exc}")
+
+    secrets, _ = load_secrets(repo, base_config.secrets.file)
+    try:
+        config = load_config(repo, secrets=secrets, environ=None)
     except (FileNotFoundError, ValueError, ValidationError) as exc:
         return LiveLLMStatus(ready=False, detail=f"Cannot load config: {exc}")
 
     llm = config.llm
-    secrets, _ = load_secrets(repo, config.secrets.file)
 
     try:
         api_key = resolve_api_key(secrets, base_url=llm.base_url)
