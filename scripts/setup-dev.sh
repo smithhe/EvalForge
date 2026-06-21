@@ -68,17 +68,27 @@ echo "Installing package and dev dependencies..."
 .venv/bin/pip install -e ".[dev]"
 
 SECRETS_FILE="fixtures/sample-app/.finalstrike/secrets.env"
+LOCAL_CONFIG_EXAMPLE="fixtures/sample-app/finalstrike.local.yaml.example"
+LOCAL_CONFIG_FILE="fixtures/sample-app/finalstrike.local.yaml"
 if [[ ! -f "$SECRETS_FILE" ]]; then
   echo "Creating fixture secrets vault at $SECRETS_FILE ..."
   mkdir -p fixtures/sample-app/.finalstrike
   cat >"$SECRETS_FILE" <<'EOF'
 OPENAI_API_KEY=fixture-test-key-not-real
 SLACK_BOT_TOKEN=fixture-slack-token
+# Optional LLM overrides (avoid editing committed finalstrike.yaml):
+# FINALSTRIKE_LLM_BASE_URL=[REDACTED]
+# FINALSTRIKE_LLM_MODEL=gpt-4o
 EOF
-  echo "(Edit this file with your real API key for live plan/computer-use runs.)"
+  echo "(Edit OPENAI_API_KEY and optional FINALSTRIKE_LLM_* for live runs.)"
 else
   echo "Fixture secrets vault already exists: $SECRETS_FILE"
-  echo "(Customize OPENAI_API_KEY and finalstrike.yaml for your LLM provider — tests allow this.)"
+fi
+
+if [[ ! -f "$LOCAL_CONFIG_FILE" ]] && [[ -f "$LOCAL_CONFIG_EXAMPLE" ]]; then
+  echo ""
+  echo "Tip: copy $LOCAL_CONFIG_EXAMPLE to $LOCAL_CONFIG_FILE"
+  echo "     to override llm.base_url/model without committing finalstrike.yaml"
 fi
 
 echo ""

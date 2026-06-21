@@ -22,20 +22,21 @@ in `finalstrike.yaml`). Run `finalstrike doctor --repo .` to confirm
 
 ## LLM configuration (live runs)
 
-`finalstrike.yaml` ships with an Ollama example (`llm.base_url` /
-`llm.model`). For OpenAI or another gateway, edit the `llm:` block and put your
-API key in `.finalstrike/secrets.env`. Default `pytest -q` does not require
-Ollama or placeholder keys — cassette tests use `tests/fixtures/cassette-smoke-v1/`.
+Committed `finalstrike.yaml` keeps the Ollama **example** defaults. For OpenAI or
+another gateway, use **gitignored** overrides — do not commit provider changes to
+`finalstrike.yaml`:
 
-```yaml
-llm:
-  provider: openai_compat
-  base_url: [REDACTED]
-  model: gpt-4o
+```bash
+cp finalstrike.local.yaml.example finalstrike.local.yaml
+# edit llm.base_url and llm.model
 ```
+
+Or set `FINALSTRIKE_LLM_BASE_URL` / `FINALSTRIKE_LLM_MODEL` in
+`.finalstrike/secrets.env` alongside `OPENAI_API_KEY`.
 
 ```bash
 finalstrike plan --repo . --acceptance acceptance-smoke.md --no-dry-run
+finalstrike doctor --repo .   # shows Local config overlay when present
 ```
 
 ## Test commands

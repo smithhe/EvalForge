@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import ValidationError
 
 from finalstrike.config.models import FinalStrikeConfig
+from finalstrike.config.overrides import apply_runtime_overlays, merge_repo_config
 
 CONFIG_FILENAME = "finalstrike.yaml"
 
@@ -22,8 +24,8 @@ def find_config_path(repo: Path) -> Path:
     return config_path
 
 
-def load_config(repo: Path) -> FinalStrikeConfig:
-    """Load and validate finalstrike.yaml from a target repo directory."""
+def load_raw_config(repo: Path) -> dict[str, Any]:
+    """Load the committed ``finalstrike.yaml`` mapping without local overrides."""
     repo = repo.resolve()
     if not repo.is_dir():
         raise NotADirectoryError(f"Repo path is not a directory: {repo}")
@@ -38,6 +40,19 @@ def load_config(repo: Path) -> FinalStrikeConfig:
     if not isinstance(raw, dict):
         raise ValueError(f"{CONFIG_FILENAME} must be a YAML mapping")
 
+    return raw
+
+
+def load_config(
+    repo: Path,
+    *,
+    secrets: dict[str, str] | None = None,
+    environ: dict[str, str] | None = None,
+) -> FinalStrikeConfig:
+    """Load config: committed yaml → ``finalstrike.local.yaml`` → runtime overrides."""
+    raw = load_raw_config(repo)
+    raw, _local_path = merge_repo_config(repo, raw)
+    raw = apply_runtime_overlays(raw, secrets=secrets, environ=environ)
     return FinalStrikeConfig.model_validate(raw)
 
 

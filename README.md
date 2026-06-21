@@ -89,7 +89,7 @@ See **[docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md)** for the full checklist (venv,
 - Dependencies live in `.venv` (gitignored). Re-run setup or `pip install -e ".[dev]"` after pulling dependency changes.
 - **Activate** the venv before `pytest -q` so subprocess-based tests find `pytest` on `PATH` (see LOCAL_SETUP.md).
 - Tests require `fixtures/sample-app/.finalstrike/secrets.env` with an `OPENAI_API_KEY` entry for `doctor` (any value — real keys are fine). The setup script creates placeholders only when the file is missing.
-- Default `pytest -q` uses committed cassettes (`tests/fixtures/cassette-smoke-v1/`); customize `fixtures/sample-app/finalstrike.yaml` for live OpenAI/Ollama without breaking tests.
+- Default `pytest -q` uses committed cassettes (`tests/fixtures/cassette-smoke-v1/`). For live OpenAI/Ollama/etc., use gitignored `finalstrike.local.yaml` or `FINALSTRIKE_LLM_*` in secrets — not committed `finalstrike.yaml`.
 
 ## Project layout
 

@@ -12,6 +12,7 @@ from finalstrike.config.acceptance import AcceptanceCriteria, load_acceptance
 from finalstrike.config.agents import AgentsContext, load_agents
 from finalstrike.config.environment import EnvironmentConfig, load_environment
 from finalstrike.config.loader import load_config
+from finalstrike.config.overrides import describe_active_overrides, local_config_path
 from finalstrike.config.models import FinalStrikeConfig
 from finalstrike.config.secrets import apply_to_environ, load_secrets, redact_secrets
 
@@ -60,10 +61,30 @@ class RepoContext(BaseModel):
         sections.append(f"**Repo:** `{self.repo}`\n")
 
         config_dict = self.config.model_dump(mode="json")
-        sections.append("## finalstrike.yaml\n")
+        sections.append("## finalstrike.yaml (effective)\n")
+        sections.append(
+            "_Merged from committed `finalstrike.yaml`, optional gitignored "
+            "`finalstrike.local.yaml`, and `FINALSTRIKE_*` keys in secrets/env._\n"
+        )
         sections.append("```yaml")
         sections.append(yaml.safe_dump(config_dict, sort_keys=False).rstrip())
         sections.append("```\n")
+
+        override_lines = describe_active_overrides(
+            self.repo,
+            secrets=self.secrets,
+            environ=self.subprocess_env if self.secrets else None,
+        )
+        if override_lines:
+            sections.append("## Local config overrides\n")
+            for line in override_lines:
+                sections.append(f"- {line}")
+            if local_config_path(self.repo).is_file():
+                sections.append(
+                    "- Edit `finalstrike.local.yaml` (gitignored) to change LLM provider "
+                    "without touching committed `finalstrike.yaml`."
+                )
+            sections.append("")
 
         sections.append("## Planner Context\n")
         planner_block = self.planner_context_block()
@@ -117,6 +138,8 @@ def load_repo_context(
     agents = load_agents(repo)
     environment = load_environment(repo)
     secrets, secrets_warnings = load_secrets(repo, config.secrets.file)
+    process_env = os.environ if inject_secrets else None
+    config = load_config(repo, secrets=secrets, environ=process_env)
     subprocess_env = apply_to_environ(secrets)
     if inject_secrets and secrets:
         os.environ.update(secrets)

@@ -8,7 +8,7 @@ FinalStrike is a single Python package (`finalstrike`) exposing a Typer CLI. `fi
 - **Local setup:** run `./scripts/setup-dev.sh` from the repo root (see [docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md)). Use `./scripts/setup-dev.sh --recreate-venv` when `.venv/bin/pip` fails with "required file not found" (stale virtualenv).
 - Dependencies are installed into a project virtualenv at `.venv` (gitignored). Activate with `source .venv/bin/activate` or prefix commands with `.venv/bin/` (e.g. `.venv/bin/pytest`, `.venv/bin/finalstrike`).
 - `fixtures/sample-app/.finalstrike/secrets.env` (gitignored) must exist for `finalstrike doctor`. Use your **real** `OPENAI_API_KEY` when calling live APIs — the default test suite does not require placeholder values. The setup script creates the file only when missing.
-- Deterministic planner cassettes read `tests/fixtures/cassette-smoke-v1/` (committed). Customize `fixtures/sample-app/finalstrike.yaml` and secrets for live `plan` / `computer-use` without breaking `pytest -q`.
+- Deterministic planner cassettes read `tests/fixtures/cassette-smoke-v1/` (committed). Customize live LLM settings via gitignored `finalstrike.local.yaml` or `FINALSTRIKE_LLM_*` in `.finalstrike/secrets.env` — not by editing committed `finalstrike.yaml`.
 
 ### Phase gaps (P5+)
 

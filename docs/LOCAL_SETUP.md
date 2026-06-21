@@ -101,23 +101,30 @@ missing; it never overwrites an existing vault.
 
 ### 5. Configure your LLM provider (optional — for live `plan` / `computer-use`)
 
-Edit `fixtures/sample-app/finalstrike.yaml` for the provider you use. Ollama is
-only the **committed example**; OpenAI, OpenRouter, LiteLLM, etc. are supported
-via `llm.base_url` and `llm.model`:
+**Do not edit committed `finalstrike.yaml` for provider experiments.** Use one of:
 
-```yaml
-llm:
-  provider: openai_compat
-  base_url: [REDACTED]
-  model: gpt-4o
+**A. Gitignored `finalstrike.local.yaml` (recommended)**
+
+```bash
+cp fixtures/sample-app/finalstrike.local.yaml.example \
+   fixtures/sample-app/finalstrike.local.yaml
+# Edit llm.base_url and llm.model — file is gitignored
 ```
 
-Deterministic cassette tests use the isolated tree at
-`tests/fixtures/cassette-smoke-v1/` — **not** your edited `fixtures/sample-app/`
-config — so `pytest -q` stays green while you point the sample app at a live API.
+**B. Keys in `.finalstrike/secrets.env`**
 
-Optional `computer_use.llm` overrides the action/vision model; when omitted, the
-planner `llm` block is used.
+```bash
+OPENAI_API_KEY=your-real-key
+FINALSTRIKE_LLM_BASE_URL=[REDACTED]
+FINALSTRIKE_LLM_MODEL=gpt-4o
+```
+
+Precedence: committed `finalstrike.yaml` → `finalstrike.local.yaml` →
+`FINALSTRIKE_*` keys in secrets/env (highest).
+
+Deterministic cassette tests use `tests/fixtures/cassette-smoke-v1/` only.
+
+Optional `computer_use.llm` in either file overrides the vision/action model.
 
 ### 6. Run tests the intended way
 

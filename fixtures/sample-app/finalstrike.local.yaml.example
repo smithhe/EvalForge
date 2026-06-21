@@ -1,0 +1,19 @@
+# finalstrike.local.yaml — gitignored local overrides (copy from finalstrike.local.yaml.example)
+#
+# Merged on top of committed finalstrike.yaml. Use this file to point at OpenAI,
+# OpenRouter, LiteLLM, etc. without risking accidental commits to finalstrike.yaml.
+#
+# Alternatively set FINALSTRIKE_LLM_BASE_URL / FINALSTRIKE_LLM_MODEL in
+# .finalstrike/secrets.env (see example file).
+
+llm:
+  provider: openai_compat
+  base_url: [REDACTED]
+  model: gpt-4o
+
+# Optional separate vision/action model for computer-use:
+# computer_use:
+#   llm:
+#     provider: openai_compat
+#     base_url: [REDACTED]
+#     model: gpt-4o
