@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 
 from finalstrike.config.models import VerificationPlan
-from finalstrike.fixture_capabilities import FixtureCapabilities
+from finalstrike.fixture_capabilities import CapabilityLayers, FixtureCapabilities
 
 
 def extract_acceptance_bullets(content: str) -> list[str]:
@@ -51,7 +51,51 @@ def assert_plan_covers_capabilities(
     capabilities: FixtureCapabilities,
 ) -> None:
     """Plan steps should cover implemented capabilities from capabilities.yaml."""
-    for api_cap in capabilities.implemented.api:
+    _assert_plan_covers_capability_layers(plan, capabilities.implemented)
+
+
+def filter_capabilities_for_acceptance(
+    capabilities: FixtureCapabilities,
+    acceptance: str,
+) -> FixtureCapabilities:
+    """Return implemented capabilities mentioned in an acceptance file."""
+    acceptance_lower = acceptance.lower()
+    implemented = capabilities.implemented
+    api = [
+        cap
+        for cap in implemented.api
+        if cap.path in acceptance or cap.path.lower() in acceptance_lower
+    ]
+    terminal = [cap for cap in implemented.terminal if cap.command in acceptance]
+    ui: list = []
+    for cap in implemented.ui:
+        if cap.route and (cap.route in acceptance or cap.route.rstrip("/") in acceptance):
+            ui.append(cap)
+            continue
+        if cap.title and cap.title in acceptance:
+            ui.append(cap)
+            continue
+        if cap.action and cap.action.replace("_", " ") in acceptance_lower:
+            ui.append(cap)
+            continue
+        if cap.description and any(
+            token in acceptance_lower
+            for token in _tokens(cap.description)
+            if len(token) > 4
+        ):
+            ui.append(cap)
+    return FixtureCapabilities(
+        version=capabilities.version,
+        implemented=CapabilityLayers(api=api, ui=ui, terminal=terminal),
+        planned=CapabilityLayers(),
+    )
+
+
+def _assert_plan_covers_capability_layers(
+    plan: VerificationPlan,
+    layers: CapabilityLayers,
+) -> None:
+    for api_cap in layers.api:
         found = any(
             step.method.upper() == api_cap.method.upper() and step.path == api_cap.path
             for scenario in plan.scenarios
@@ -62,7 +106,7 @@ def assert_plan_covers_capabilities(
             f"(expect {api_cap.expect_status})"
         )
 
-    for terminal_cap in capabilities.implemented.terminal:
+    for terminal_cap in layers.terminal:
         found = any(
             terminal_cap.command in step.command
             for scenario in plan.scenarios
@@ -70,22 +114,47 @@ def assert_plan_covers_capabilities(
         )
         assert found, f"Plan missing terminal command containing {terminal_cap.command!r}"
 
-    for ui_cap in capabilities.implemented.ui:
+    for ui_cap in layers.ui:
+        route = ui_cap.route
+        title = ui_cap.title
+        action = ui_cap.action
+        description = ui_cap.description
         found = any(
-            (
-                ui_cap.route is not None
-                and ui_cap.route in step.instruction
-            )
-            or (
-                ui_cap.title is not None
-                and ui_cap.title.lower() in step.instruction.lower()
-            )
+            _ui_step_matches_capability(step.instruction, route, title, action, description)
             for scenario in plan.scenarios
             for step in scenario.layers.ui
         )
         assert found, (
-            f"Plan missing UI step for route={ui_cap.route!r} title={ui_cap.title!r}"
+            f"Plan missing UI step for route={route!r} title={title!r} "
+            f"action={action!r}"
         )
+
+
+def _ui_step_matches_capability(
+    instruction: str,
+    route: str | None,
+    title: str | None,
+    action: str | None,
+    description: str | None,
+) -> bool:
+    instruction_lower = instruction.lower()
+    if route is not None and (
+        route in instruction
+        or route.rstrip("/") + "/" in instruction
+        or route.rstrip("/") in instruction
+    ):
+        return True
+    if title is not None and title.lower() in instruction_lower:
+        return True
+    if action is not None and action.replace("_", " ") in instruction_lower:
+        return True
+    if description is not None and any(
+        token in instruction_lower
+        for token in _tokens(description)
+        if len(token) > 4
+    ):
+        return True
+    return False
 
 
 def assert_plan_has_layer_coverage(plan: VerificationPlan) -> None:

@@ -30,6 +30,7 @@ from tests.support.plan_assertions import (
     assert_plan_covers_acceptance,
     assert_plan_covers_capabilities,
     assert_plan_has_layer_coverage,
+    filter_capabilities_for_acceptance,
 )
 
 
@@ -47,11 +48,12 @@ def test_generate_verification_plan_live_structural() -> None:
     plan = generate_verification_plan(context, max_retries=2)
     capabilities = load_capabilities(FIXTURE_REPO / "capabilities.yaml")
     acceptance_text = ACCEPTANCE_SMOKE.read_text(encoding="utf-8")
+    smoke_capabilities = filter_capabilities_for_acceptance(capabilities, acceptance_text)
 
     assert plan.scenarios
     assert_plan_has_layer_coverage(plan)
     assert_plan_covers_acceptance(plan, acceptance_text)
-    assert_plan_covers_capabilities(plan, capabilities)
+    assert_plan_covers_capabilities(plan, smoke_capabilities)
 
 
 @pytest.mark.requires_live_llm

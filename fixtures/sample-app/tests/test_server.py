@@ -57,6 +57,13 @@ def _post_json(url: str, payload: dict) -> tuple[int, dict]:
         return exc.code, data
 
 
+def _options(url: str) -> tuple[int, dict[str, str]]:
+    request = Request(url, method="OPTIONS")
+    with urlopen(request) as response:
+        headers = {key.lower(): value for key, value in response.headers.items()}
+        return response.status, headers
+
+
 def test_health_endpoint(api_server: str) -> None:
     status, body = _get(f"{api_server}/health")
     assert status == 200
@@ -90,3 +97,17 @@ def test_get_tasks_lists_created_tasks(api_server: str) -> None:
     assert status == 200
     assert len(tasks) == 2
     assert [task["title"] for task in tasks] == ["First task", "Second task"]
+
+
+def test_cors_preflight_allows_post(api_server: str) -> None:
+    status, headers = _options(f"{api_server}/api/tasks")
+    assert status == 204
+    assert headers.get("access-control-allow-origin") == "*"
+    assert "POST" in headers.get("access-control-allow-methods", "")
+
+    post_status, task = _post_json(
+        f"{api_server}/api/tasks",
+        {"title": "CORS task", "description": "via preflight"},
+    )
+    assert post_status == 201
+    assert task["title"] == "CORS task"
