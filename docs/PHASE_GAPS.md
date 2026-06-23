@@ -15,13 +15,12 @@ guardrails so nothing is forgotten silently.
 
 ## Acceptance criteria files (fixture)
 
-- **`acceptance-smoke.md`** — matches the current sample-app. Use for P0–P5.
-- **`acceptance-full.md`** — task-list scenario for P6 demos. Fixture not built yet.
+- **`acceptance-smoke.md`** — matches the current smoke subset (health, landing page, tests). Use for P0–P5 default runs.
+- **`acceptance-full.md`** — Tier 1 task-list scenario for P6 demos (implemented).
 - **`capabilities.yaml`** — source of truth for implemented vs planned behavior.
 
-When extending the fixture for P6, update `capabilities.yaml` first, then
-move items from `planned` to `implemented`, then point demos at
-`acceptance-full.md`.
+When extending the fixture, update `capabilities.yaml` first, then move items
+from `planned` to `implemented`, then point demos at `acceptance-full.md`.
 
 ## LLM integration testing (P5+)
 

@@ -50,6 +50,26 @@ def test_full_acceptance_documents_task_criteria() -> None:
     assert "task list" in full.lower()
     assert "New Task" in full
     assert "POST /api/tasks" in full
+    assert "GET /api/tasks" in full
+    assert "http://localhost:3000/tasks/" in full
+    assert "Sample App - Tasks" in full
+
+
+def test_implemented_ui_routes_resolve_to_static_files() -> None:
+    capabilities = load_capabilities(FIXTURE_REPO / "capabilities.yaml")
+    static_root = FIXTURE_REPO / "static"
+    for ui_cap in capabilities.implemented.ui:
+        if ui_cap.route is None:
+            continue
+        route = ui_cap.route.strip("/")
+        candidates = [
+            static_root / f"{route}.html",
+            static_root / route / "index.html",
+        ]
+        assert any(path.is_file() for path in candidates), (
+            f"UI route {ui_cap.route!r} has no static file at "
+            f"{candidates[0]} or {candidates[1]}"
+        )
 
 
 def test_doctor_cli_fixture_repo() -> None:

@@ -9,6 +9,9 @@ implemented:
     - method: GET
       path: /health
       expect_status: 200
+    - method: GET
+      path: /api/tasks
+      expect_status: 200
     - method: POST
       path: /api/tasks
       expect_status: 201
@@ -16,6 +19,7 @@ implemented:
     - route: /
       title: Sample App
     - route: /tasks
+      title: Sample App - Tasks
     - action: create_task
       description: Fill title and description, save, see task in list
   terminal:

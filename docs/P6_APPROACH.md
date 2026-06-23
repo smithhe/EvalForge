@@ -43,7 +43,7 @@ The OS default browser (`xdg-open`) is **not** used — reproducibility and
 |-------|----------|
 | Standalone `finalstrike computer-use run` | `finalstrike run --layers ui` (P10) |
 | Per-step screenshots | Full FFmpeg desktop video (P7) |
-| Smoke UI (`acceptance-smoke.md` ac-2) | Task-list fixture (`acceptance-full.md`) |
+| Smoke UI (`acceptance-smoke.md` ac-2) | Tier 2 task actions (complete, delete) |
 | Action cassettes for deterministic tests | HTML report (P8) |
 
 ## Future: plugins inside host applications
