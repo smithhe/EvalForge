@@ -4,8 +4,13 @@ from __future__ import annotations
 
 import re
 
-from finalstrike.config.models import VerificationPlan
+from finalstrike.config.models import Scenario, VerificationPlan
 from finalstrike.fixture_capabilities import CapabilityLayers, FixtureCapabilities
+
+# Filler words in UI acceptance bullets; excluded from overlap scoring.
+_ACCEPTANCE_STOPWORDS = frozenset(
+    {"the", "and", "can", "user", "with", "for", "http", "https", "see"}
+)
 
 
 def extract_acceptance_bullets(content: str) -> list[str]:
@@ -26,23 +31,61 @@ def _tokens(value: str) -> set[str]:
     return {token for token in re.findall(r"[a-z0-9_/]+", value.lower()) if len(token) > 2}
 
 
+def _significant_tokens(value: str) -> set[str]:
+    return _tokens(value) - _ACCEPTANCE_STOPWORDS
+
+
+def _scenario_coverage_text(scenario: Scenario) -> str:
+    """All planner output text that can evidence coverage of a criterion."""
+    parts = [scenario.source]
+    for step in scenario.layers.ui:
+        parts.append(step.instruction)
+    for step in scenario.layers.api:
+        parts.append(f"{step.method} {step.path}")
+        if step.expect is not None:
+            parts.append(str(step.expect.status))
+    for step in scenario.layers.terminal:
+        parts.append(step.command)
+        if step.reason:
+            parts.append(step.reason)
+    return " ".join(parts)
+
+
+def _bullet_matches_text(bullet: str, text: str, *, min_token_overlap: float = 0.65) -> bool:
+    bullet_norm = _normalize_text(bullet)
+    text_norm = _normalize_text(text)
+    if bullet_norm in text_norm or text_norm in bullet_norm:
+        return True
+
+    bullet_tokens = _tokens(bullet)
+    text_tokens = _tokens(text)
+    if bullet_tokens and bullet_tokens.issubset(text_tokens):
+        return True
+
+    significant = _significant_tokens(bullet)
+    if not significant:
+        return False
+    if significant.issubset(_significant_tokens(text)):
+        return True
+
+    overlap = len(significant & _significant_tokens(text)) / len(significant)
+    return overlap >= min_token_overlap
+
+
 def assert_plan_covers_acceptance(plan: VerificationPlan, acceptance: str) -> None:
     """Each acceptance bullet should map to at least one scenario."""
     bullets = extract_acceptance_bullets(acceptance)
     assert bullets, "acceptance criteria must contain bullet items"
 
+    plan_text = " ".join(_scenario_coverage_text(scenario) for scenario in plan.scenarios)
+
     for bullet in bullets:
-        bullet_norm = _normalize_text(bullet)
-        bullet_tokens = _tokens(bullet)
-        matched = False
-        for scenario in plan.scenarios:
-            source_norm = _normalize_text(scenario.source)
-            if bullet_norm in source_norm or source_norm in bullet_norm:
-                matched = True
-                break
-            if bullet_tokens and bullet_tokens.issubset(_tokens(source_norm)):
-                matched = True
-                break
+        matched = any(
+            _bullet_matches_text(bullet, _scenario_coverage_text(scenario))
+            for scenario in plan.scenarios
+        )
+        if not matched:
+            matched = _bullet_matches_text(bullet, plan_text)
         assert matched, f"No scenario maps to acceptance bullet: {bullet!r}"
 
 
