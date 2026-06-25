@@ -160,6 +160,7 @@ def test_video_recorder_starts_and_stops(mock_build: MagicMock, tmp_path: Path) 
         stopped = recorder.stop()
 
     assert stopped == output
+    process.send_signal.assert_called_once()
     process.wait.assert_called()
 
 

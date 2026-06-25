@@ -90,17 +90,16 @@ class VideoRecorder:
 
 
 def _terminate_process(process: subprocess.Popen[bytes]) -> None:
+    if process.poll() is not None:
+        return
     try:
-        os.killpg(process.pid, signal.SIGINT)
+        process.send_signal(signal.SIGINT)
     except (OSError, ProcessLookupError):
         process.terminate()
     try:
         process.wait(timeout=10)
     except subprocess.TimeoutExpired:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except (OSError, ProcessLookupError):
-            process.kill()
+        process.kill()
         process.wait(timeout=5)
 
 
