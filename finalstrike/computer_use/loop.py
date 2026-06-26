@@ -16,6 +16,7 @@ from finalstrike.computer_use.actions import (
     parse_action_response,
 )
 from finalstrike.computer_use.browser import BrowserLaunchError, launch_browser
+from finalstrike.computer_use.diagnostics import format_max_steps_error
 from finalstrike.computer_use.platform.a11y import AccessibilityDriver
 from finalstrike.computer_use.platform.input import InputDriver, create_input_driver
 from finalstrike.computer_use.platform.screenshot import Screenshot, ScreenshotDriver
@@ -199,7 +200,12 @@ class ActionLoop:
             status=LayerStatus.FAILED,
             steps=steps,
             screenshots=screenshots,
-            error=f"exceeded max_ui_steps ({self.max_steps})",
+            error=format_max_steps_error(
+                max_steps=self.max_steps,
+                instruction=self.instruction,
+                history=self._history,
+                steps=steps,
+            ),
         )
 
     def _step_timestamp_ms(self) -> int | None:

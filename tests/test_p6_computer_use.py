@@ -550,6 +550,37 @@ def test_click_rejected_when_screenshot_dimensions_unknown(tmp_path: Path) -> No
     assert "dimensions unknown" in result.error
 
 
+def test_action_loop_max_steps_error_includes_action_trail(tmp_path: Path) -> None:
+    responses = [
+        json.dumps(
+            {
+                "thought": "click again",
+                "action": {"type": "click", "x": 1, "y": 1},
+            }
+        )
+        for _ in range(3)
+    ]
+    loop = ActionLoop(
+        instruction="Verify the Tasks page shows a Done badge",
+        output_dir=tmp_path,
+        provider=ReplayActionProvider(responses),
+        browser=BrowserKind.CHROMIUM,
+        max_steps=2,
+        max_action_retries=0,
+        max_parse_retries=0,
+        screenshot_driver=_FakeScreenshotDriver(),
+        input_driver=_FakeInput(),
+        ui_base_url=UI_BASE_URL,
+    )
+    result = loop.run()
+    assert result.status == LayerStatus.FAILED
+    assert result.error is not None
+    assert "exceeded max_ui_steps (2)" in result.error
+    assert "Done badge" in result.error
+    assert "click(1, 1)" in result.error
+    assert len(result.steps) == 2
+
+
 def test_build_action_messages_include_configured_ui() -> None:
     messages = build_action_messages(
         instruction="verify title",
