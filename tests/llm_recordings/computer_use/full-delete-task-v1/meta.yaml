@@ -1,0 +1,8 @@
+id: full-delete-task-v1
+phase: 6
+component: computer_use
+instruction: Delete a task using "Delete", confirm with "Confirm Delete", and verify it is removed from the list
+instruction_sha256: 8dd7ff39ee2599a2a2546487469b88d92b2ed0cf75a1ec7f9f1ea8bbadf704f3
+prompt_version: cd13c7c010242b1d
+responses: 7
+notes: Tier 2 delete-with-modal flow for acceptance-full.md (ac-13).

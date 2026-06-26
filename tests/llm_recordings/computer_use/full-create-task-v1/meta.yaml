@@ -1,0 +1,8 @@
+id: full-create-task-v1
+phase: 6
+component: computer_use
+instruction: On http://localhost:8080/tasks/, click "New Task", fill title and description, save the form
+instruction_sha256: cea6d13959aed86dbe34610c3f90acc5d9cd7b8eb5d23a02292ef379050e5c19
+prompt_version: cd13c7c010242b1d
+responses: 10
+notes: Tier 1 create-task flow for acceptance-full.md (ac-9).

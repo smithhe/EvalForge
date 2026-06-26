@@ -17,6 +17,11 @@ llm_recordings/
   computer_use/              # P6+: same shape per UI scenario
     smoke-title-v1/          # landing page title (port 8080)
     full-tasks-title-v1/     # tasks page title
+    full-create-task-v1/     # Tier 1 New Task form
+    full-complete-task-v1/   # Tier 2 Mark Done
+    full-delete-task-v1/     # Tier 2 delete modal
+    full-search-tasks-v1/    # Tier 3 search filter
+    full-settings-v1/        # Tier 3 theme save
 ```
 
 ## Default CI
@@ -33,6 +38,7 @@ export FINALSTRIKE_RECORD_LLM=1
 pytest -m requires_live_llm tests/test_p5_planner_live.py::test_record_smoke_planner_cassette -q
 pytest -m requires_live_llm tests/test_p5_planner_live.py::test_record_full_planner_cassette -q
 pytest tests/test_p5_planner_integration.py tests/test_p5_planner_full_integration.py -q
+pytest tests/test_p6_computer_use_cassettes.py -q
 git add tests/llm_recordings/ tests/fixtures/cassette-full-v1/
 ```
 

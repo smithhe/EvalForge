@@ -40,6 +40,25 @@ finalstrike computer-use run --repo . \
 finalstrike computer-use run --repo . \
   --instruction 'Open http://localhost:8080/tasks/ and verify the page title is "Sample App - Tasks"'
 
+# Tier 1–3 interactive flows (vision LLM; matches committed action cassettes)
+finalstrike computer-use run --repo . \
+  --instruction 'On http://localhost:8080/tasks/, click "New Task", fill title and description, save the form'
+
+finalstrike computer-use run --repo . \
+  --instruction 'On the Tasks page, click "Mark Done" on a task and verify a Done badge with strikethrough title'
+
+finalstrike computer-use run --repo . \
+  --instruction 'Delete a task using "Delete", confirm with "Confirm Delete", and verify it is removed from the list'
+
+finalstrike computer-use run --repo . \
+  --instruction 'On the Tasks page, type in the search box and verify the visible task list filters as you type'
+
+finalstrike computer-use run --repo . \
+  --instruction 'On Settings, choose Light or Dark theme, click "Save Settings", and verify "Settings saved." appears'
+
+# Full orchestrator with UI evidence + report.html (Linux GUI VM)
+finalstrike run --repo . --acceptance acceptance-full.md --layers ui
+
 # Evidence: .finalstrike/runs/<run_id>/screenshots/ and result.json
 finalstrike env down --repo .
 ```

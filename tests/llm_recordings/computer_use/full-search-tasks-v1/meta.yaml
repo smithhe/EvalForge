@@ -1,0 +1,8 @@
+id: full-search-tasks-v1
+phase: 6
+component: computer_use
+instruction: On the Tasks page, type in the search box and verify the visible task list filters as you type
+instruction_sha256: 048b2106c75a2f345bf788c4a2ea1d41e557d38317e42ef2a5ce2c714e5f4c45
+prompt_version: cd13c7c010242b1d
+responses: 6
+notes: Tier 3 search filter flow for acceptance-full.md (ac-19).

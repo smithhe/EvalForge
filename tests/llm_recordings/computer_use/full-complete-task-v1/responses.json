@@ -1,0 +1,7 @@
+[
+  "{\"thought\": \"Open the tasks page\", \"action\": {\"type\": \"launch\", \"url\": \"http://localhost:8080/tasks/\"}}",
+  "{\"thought\": \"Wait for tasks to load\", \"action\": {\"type\": \"wait\", \"seconds\": 2}}",
+  "{\"thought\": \"Click Mark Done on the first task\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 5}}",
+  "{\"thought\": \"Wait for the Done badge to appear\", \"action\": {\"type\": \"wait\", \"seconds\": 1}}",
+  "{\"thought\": \"Task shows Done badge with strikethrough title\", \"action\": {\"type\": \"done\", \"success\": true, \"message\": \"Mark Done completed\"}}"
+]

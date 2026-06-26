@@ -1,0 +1,12 @@
+[
+  "{\"thought\": \"Open the tasks page\", \"action\": {\"type\": \"launch\", \"url\": \"http://localhost:8080/tasks/\"}}",
+  "{\"thought\": \"Wait for the page to load\", \"action\": {\"type\": \"wait\", \"seconds\": 2}}",
+  "{\"thought\": \"Click the New Task button\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 5}}",
+  "{\"thought\": \"Focus the title field\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 6}}",
+  "{\"thought\": \"Enter the task title\", \"action\": {\"type\": \"type\", \"text\": \"Cassette task\"}}",
+  "{\"thought\": \"Focus the description field\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 7}}",
+  "{\"thought\": \"Enter the task description\", \"action\": {\"type\": \"type\", \"text\": \"Created via computer-use cassette\"}}",
+  "{\"thought\": \"Save the new task\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 8}}",
+  "{\"thought\": \"Wait for the list to refresh\", \"action\": {\"type\": \"wait\", \"seconds\": 1}}",
+  "{\"thought\": \"Task form saved successfully\", \"action\": {\"type\": \"done\", \"success\": true, \"message\": \"New task form submitted\"}}"
+]

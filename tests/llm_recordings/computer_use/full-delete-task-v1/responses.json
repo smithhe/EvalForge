@@ -1,0 +1,9 @@
+[
+  "{\"thought\": \"Open the tasks page\", \"action\": {\"type\": \"launch\", \"url\": \"http://localhost:8080/tasks/\"}}",
+  "{\"thought\": \"Wait for tasks to load\", \"action\": {\"type\": \"wait\", \"seconds\": 2}}",
+  "{\"thought\": \"Click Delete on a task\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 5}}",
+  "{\"thought\": \"Wait for the confirmation modal\", \"action\": {\"type\": \"wait\", \"seconds\": 1}}",
+  "{\"thought\": \"Confirm deletion\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 6}}",
+  "{\"thought\": \"Wait for the list to update\", \"action\": {\"type\": \"wait\", \"seconds\": 1}}",
+  "{\"thought\": \"Task removed from the list\", \"action\": {\"type\": \"done\", \"success\": true, \"message\": \"Task deleted after Confirm Delete\"}}"
+]
