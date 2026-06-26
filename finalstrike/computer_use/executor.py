@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from finalstrike.computer_use.config import resolve_computer_use_llm
+from finalstrike.computer_use.diagnostics import prefix_scenario_error
 from finalstrike.computer_use.loop import ActionLoop, ActionLoopResult, ActionLLMProvider
 from finalstrike.config.context import RepoContext
 from finalstrike.config.models import (
@@ -67,7 +68,13 @@ def execute_ui_scenario(
                 )
             ],
             steps=loop_result.steps,
-            error=loop_result.error,
+            error=prefix_scenario_error(
+                loop_result.error or "UI scenario failed",
+                scenario_id=scenario_id,
+                instruction=instruction,
+            )
+            if loop_result.status == LayerStatus.FAILED
+            else loop_result.error,
         )
 
         run_status = (
