@@ -1,0 +1,8 @@
+[
+  "{\"thought\": \"Open the tasks page\", \"action\": {\"type\": \"launch\", \"url\": \"http://localhost:8080/tasks/\"}}",
+  "{\"thought\": \"Wait for tasks to load\", \"action\": {\"type\": \"wait\", \"seconds\": 2}}",
+  "{\"thought\": \"Click the search box\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 5}}",
+  "{\"thought\": \"Type a filter query\", \"action\": {\"type\": \"type\", \"text\": \"demo\"}}",
+  "{\"thought\": \"Wait for the filtered list\", \"action\": {\"type\": \"wait\", \"seconds\": 1}}",
+  "{\"thought\": \"Visible task list filtered by search query\", \"action\": {\"type\": \"done\", \"success\": true, \"message\": \"Search filter applied\"}}"
+]

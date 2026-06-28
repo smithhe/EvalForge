@@ -14,7 +14,7 @@ from finalstrike import __version__
 from finalstrike.config.context import load_repo_context
 from finalstrike.config.plan import load_verification_plan
 from finalstrike.config.loader import format_validation_error, load_config
-from finalstrike.config.models import LayerStatus
+from finalstrike.config.models import LayerStatus, RunResult
 from finalstrike.planner import generate_verification_plan
 from finalstrike.providers.openai_compat import LLMProviderError
 from finalstrike.env.orchestrator import EnvOrchestrator
@@ -31,6 +31,7 @@ from finalstrike.computer_use.executor import (
     execute_ui_scenario,
     format_run_result_json as format_ui_run_result_json,
 )
+from finalstrike.computer_use.diagnostics import format_ui_failure_console
 
 app = typer.Typer(
     name="finalstrike",
@@ -42,6 +43,12 @@ computer_use_app = typer.Typer(help="Computer-use UI verification (Phase 6).")
 app.add_typer(env_app, name="env")
 app.add_typer(computer_use_app, name="computer-use")
 console = Console(stderr=True)
+
+
+def _print_ui_failure_diagnostics(result: RunResult, *, artifact_dir: Path) -> None:
+    message = format_ui_failure_console(result, artifact_dir=artifact_dir)
+    if message:
+        console.print(f"[red]{message}[/red]")
 
 
 def version_callback(value: bool) -> None:
@@ -565,6 +572,8 @@ def run(
         detail = video_gap.reason if video_gap else "recorder produced no output"
         console.print(f"[yellow]Warning:[/yellow] Desktop video not recorded — {detail}")
     if result.status.value in {"failed", "partial"}:
+        if result.layers.ui is not None and result.layers.ui.status == LayerStatus.FAILED:
+            _print_ui_failure_diagnostics(result, artifact_dir=run_dir)
         raise typer.Exit(code=1)
 
 
@@ -684,6 +693,9 @@ def computer_use_run(
         raise typer.Exit(code=1) from exc
 
     typer.echo(format_ui_run_result_json(result))
+    run_dir = (
+        context.repo / context.config.evidence.output_dir / result.run_id
+    ).resolve()
     if context.config.evidence.video and result.artifacts.video is None:
         video_gap = next(
             (gap for gap in result.gaps if gap.item == "Desktop video recording"),
@@ -692,7 +704,5 @@ def computer_use_run(
         detail = video_gap.reason if video_gap else "recorder produced no output"
         console.print(f"[yellow]Warning:[/yellow] Desktop video not recorded — {detail}")
     if result.status.value == "failed":
-        ui_error = result.layers.ui.error if result.layers.ui else None
-        if ui_error:
-            console.print(f"[red]Computer-use failed:[/red] {ui_error}")
+        _print_ui_failure_diagnostics(result, artifact_dir=run_dir)
         raise typer.Exit(code=1)

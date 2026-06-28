@@ -1,0 +1,8 @@
+id: full-complete-task-v1
+phase: 6
+component: computer_use
+instruction: On the Tasks page, click "Mark Done" on a task and verify a Done badge with strikethrough title
+instruction_sha256: a211e05992ca63ddb7280a153aa4f7750bc95234c5ca05a8db74c658d41d3915
+prompt_version: cd13c7c010242b1d
+responses: 5
+notes: Tier 2 mark-done flow for acceptance-full.md (ac-11).

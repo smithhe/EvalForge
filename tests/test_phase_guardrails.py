@@ -114,18 +114,18 @@ def test_smoke_planner_cassette_present() -> None:
 
 def test_smoke_action_cassette_present() -> None:
     from tests.support.action_cassette import (
-        DEFAULT_FULL_TASKS_TITLE_CASSETTE_ID,
-        DEFAULT_SMOKE_TITLE_CASSETTE_ID,
+        ALL_COMPUTER_USE_CASSETTE_IDS,
+        INTERACTIVE_CASSETTE_IDS,
         load_action_cassette,
     )
 
-    smoke = load_action_cassette(DEFAULT_SMOKE_TITLE_CASSETTE_ID)
-    assert smoke.meta.component == "computer_use"
-    assert smoke.responses
+    for cassette_id in ALL_COMPUTER_USE_CASSETTE_IDS:
+        cassette = load_action_cassette(cassette_id)
+        assert cassette.meta.component == "computer_use"
+        assert cassette.responses
+        assert len(cassette.responses) == cassette.meta.responses
 
-    full_tasks = load_action_cassette(DEFAULT_FULL_TASKS_TITLE_CASSETTE_ID)
-    assert full_tasks.meta.component == "computer_use"
-    assert full_tasks.responses
+    assert len(INTERACTIVE_CASSETTE_IDS) >= 4
 
 
 def test_full_planner_cassette_present() -> None:

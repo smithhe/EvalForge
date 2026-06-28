@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from finalstrike.computer_use.config import resolve_computer_use_llm
+from finalstrike.computer_use.diagnostics import prefix_scenario_error
 from finalstrike.computer_use.loop import ActionLLMProvider, ActionLoop
 from finalstrike.config.context import RepoContext
 from finalstrike.config.models import (
@@ -72,7 +73,11 @@ def run_ui_layer(
         )
         if loop_result.status == LayerStatus.FAILED:
             layer_status = LayerStatus.FAILED
-            layer_error = loop_result.error or f"UI scenario {scenario_id!r} failed"
+            layer_error = prefix_scenario_error(
+                loop_result.error or "UI scenario failed",
+                scenario_id=scenario_id,
+                instruction=instruction,
+            )
             break
 
     return UILayerResult(

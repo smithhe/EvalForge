@@ -1,0 +1,8 @@
+[
+  "{\"thought\": \"Open the settings page\", \"action\": {\"type\": \"launch\", \"url\": \"http://localhost:8080/settings/\"}}",
+  "{\"thought\": \"Wait for settings to load\", \"action\": {\"type\": \"wait\", \"seconds\": 2}}",
+  "{\"thought\": \"Select the Dark theme option\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 5}}",
+  "{\"thought\": \"Save settings\", \"action\": {\"type\": \"click\", \"x\": 5, \"y\": 6}}",
+  "{\"thought\": \"Wait for confirmation message\", \"action\": {\"type\": \"wait\", \"seconds\": 1}}",
+  "{\"thought\": \"Settings saved message is visible\", \"action\": {\"type\": \"done\", \"success\": true, \"message\": \"Settings saved.\"}}"
+]

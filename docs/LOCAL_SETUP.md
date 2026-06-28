@@ -257,6 +257,38 @@ finalstrike computer-use run --repo fixtures/sample-app \
 finalstrike env down --repo fixtures/sample-app
 ```
 
+### Interactive sample-app flows (acceptance-full Tiers 1–3)
+
+With services running (`finalstrike env up --repo fixtures/sample-app`) and a
+vision-capable model configured, you can exercise multi-step UI scenarios that
+match committed action cassettes in `tests/llm_recordings/computer_use/`:
+
+```bash
+# Tier 1 — create task
+finalstrike computer-use run --repo fixtures/sample-app \
+  --instruction 'On http://localhost:8080/tasks/, click "New Task", fill title and description, save the form'
+
+# Tier 2 — mark done / delete with modal
+finalstrike computer-use run --repo fixtures/sample-app \
+  --instruction 'On the Tasks page, click "Mark Done" on a task and verify a Done badge with strikethrough title'
+
+finalstrike computer-use run --repo fixtures/sample-app \
+  --instruction 'Delete a task using "Delete", confirm with "Confirm Delete", and verify it is removed from the list'
+
+# Tier 3 — search and settings
+finalstrike computer-use run --repo fixtures/sample-app \
+  --instruction 'On the Tasks page, type in the search box and verify the visible task list filters as you type'
+
+finalstrike computer-use run --repo fixtures/sample-app \
+  --instruction 'On Settings, choose Light or Dark theme, click "Save Settings", and verify "Settings saved." appears'
+
+# Full orchestrator UI layer + HTML report
+finalstrike run --repo fixtures/sample-app \
+  --acceptance fixtures/sample-app/acceptance-full.md --layers ui
+```
+
+Deterministic cassette replay (no live LLM): `pytest tests/test_p6_computer_use_cassettes.py -q`.
+
 ### What success looks like
 
 - CLI prints `RunResult` JSON with `"status": "passed"` and exits **0**.

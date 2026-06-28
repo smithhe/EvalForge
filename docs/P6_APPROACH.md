@@ -39,12 +39,20 @@ The OS default browser (`xdg-open`) is **not** used — reproducibility and
 
 ## Scope boundaries
 
-| In P6 | Deferred |
+| In P6 / P6+ | Deferred |
 |-------|----------|
-| Standalone `finalstrike computer-use run` | `finalstrike run --layers ui` (P10) |
-| Per-step screenshots | Full FFmpeg desktop video (P7) |
-| Smoke UI (`acceptance-smoke.md` ac-2) | Full fixture UI (`acceptance-full.md`) via planner `full-v1` cassette |
-| Action cassettes (`smoke-title-v1`, `full-tasks-title-v1`) | HTML report (P8) |
+| Standalone `finalstrike computer-use run` | — |
+| Per-step screenshots | — |
+| Smoke UI (`acceptance-smoke.md` ac-2) | — |
+| Title action cassettes (`smoke-title-v1`, `full-tasks-title-v1`) | — |
+| Interactive action cassettes (create, complete, delete, search, settings) | Remaining `acceptance-full.md` flows (import wizard, detail, dashboard) |
+| `finalstrike run --layers ui` (P10) | — |
+| Full FFmpeg desktop video (P7) | — |
+| HTML report (P8) | — |
+
+Committed interactive cassettes live under `tests/llm_recordings/computer_use/`
+and replay in default `pytest -q` via `tests/test_p6_computer_use_cassettes.py`.
+Live runs on a Linux GUI VM still require a vision-capable LLM.
 
 ## Future: plugins inside host applications
 

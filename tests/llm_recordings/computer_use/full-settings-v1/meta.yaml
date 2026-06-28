@@ -1,0 +1,8 @@
+id: full-settings-v1
+phase: 6
+component: computer_use
+instruction: On Settings, choose Light or Dark theme, click "Save Settings", and verify "Settings saved." appears
+instruction_sha256: 501227b10ad8e92967e948a8274dadde27755ae1e11bf6d4daec1a8960d5001c
+prompt_version: cd13c7c010242b1d
+responses: 6
+notes: Tier 3 settings theme save flow for acceptance-full.md (ac-17).
